@@ -1,0 +1,121 @@
+---
+title: "helminthR"
+author: "Tao Huang"
+date: "October 22, 2018"
+output: html_document
+---
+#install and load the package
+```{r}
+#devtools::install_github("rOpenSci/helminthR")
+library("helminthR")
+library(ggmap)
+library(googleway)
+```
+
+###load and clean the locations data
+```{r}
+locations
+data(locations)
+r_cty<-c("East Coast","Central","Northern Europe","Western Europe","Eastern & Central Europe","Southeast Europe","Southwest Europe","South","North West","South West","Northern Territory","North Island","South Island","Lesser Islands","Polar Sea","Greenland/Norwegian zone","East Greenland coast","Arctic Ocean","Marine - all records","Marine - no area specified","Icelandic coast","Northern Norwegian coast","USSR zone","Alaskan/Canadian zone","Bering Sea","Atlantic Ocean","NW Atlantic","Gulf of Mexico","NE South American coast","Coast of USA","Canadian coast","Brazilian coast","Argentine/Uruguayan coast","Falkland coast","Australian coast","Coast of N Territories","Coast of Queensland","Coast of NSW","Coast of Victoria","Coast of Tasmania","Coast of Indonesia & Malaysia","West Australian coast","South Austrlian coast","Coast of East Africa","South African coast","Coast of Madagascar","Atlantic Zone","Indian Ocean Zone","Pacific Ocean Zone"
+         )
+locations<-locations[!(locations$Location %in% r_cty),]
+```
+
+###get the table of Host-Parasite-Location
+```{r}
+for (cty in locations$Location)
+{
+
+f<- helminthR::findLocation(location=cty
+                                     )
+ f$Location<-cty
+
+  assign(paste("HostPars_",cty,sep = ""),f )
+
+}
+l.df <- lapply(ls(pattern="HostPars_"), function(x) get(x))
+
+l_df<-do.call("rbind", l.df)
+
+write.csv(l_df,file="l_df.csv")
+
+```
+###get the lat and lon 
+```{r}
+l_df_100<-l_df[1:100,]
+lat_lon_100<-geocode(as.character(l_df_100$Location), source = "dsk")
+l_df_100$lon<-lat_lon_100$lon
+l_df_100$lat<-lat_lon_100$lat
+write.csv(l_df_100,file="l_df_100_lat_lon.csv")
+```
+
+```{r}
+for_z<-read.csv("C:/Users/huangt/Documents/Zooscores/Zooscore_trait_Helminth.csv",header=T,sep=',')
+head(for_z)
+l_df_z<-l_df[l_df$Parasite %in% for_z$ParasiteCorrectedName_Zooscores_VR_Ver5.0_Final,]
+```
+#read the Host-Parasite-Country table
+```{r}
+l<-read.csv("C:/Users/huangt/Documents/l.df.csv",header=T,sep=',')
+head(l)
+```
+
+```{r}
+dim(l)
+#unique species
+u_l<-unique(l$Parasite)
+length(u_l)
+z_in_l<-for_z[for_z$Match %in% u_l,]
+dim(z_in_l)
+z_not_l<-for_z[!(for_z$Match %in% u_l),]
+dim(z_not_l)
+```
+
+```{r}
+z_in_l_w_l<-merge(z_in_l,l,by.x="Match",by.y="Parasite")
+ dim(z_in_l)
+#595  53
+ dim(l)
+#446532      5
+dim(z_in_l_w_l)
+#62562    57
+```
+#Acanthocheilonema spirocauda
+```{r}
+dim(z_in_l[z_in_l$Match=="Acanthocheilonema spirocauda",])
+dim(l[l$Parasite=="Acanthocheilonema spirocauda",])
+dim(z_in_l_w_l[z_in_l_w_l$Match=="Acanthocheilonema spirocauda",])
+#dim(z_in_l_w_l[z_in_l_w_l$Match,])
+```
+#Alaria alata
+```{r}
+dim(z_in_l[z_in_l$Match=="Alaria alata",])
+dim(l[l$Parasite=="Alaria alata",])
+dim(z_in_l_w_l[z_in_l_w_l$Match=="Alaria alata",])
+#dim(z_in_l_w_l[z_in_l_w_l$Match,])
+```
+
+```{r}
+
+l$comb<-paste(l$Parasite,"_",l$Country,sep='')
+head(l)
+dim(l)
+length(unique(l$comb))
+library(dplyr)
+library(tidyr)
+comb<-as.data.frame(l$comb
+  
+)
+
+#comb %>% separate(comb, c("Parasite","Country"), sep="_")
+
+```
+
+
+
+
+
+
+
+
+
