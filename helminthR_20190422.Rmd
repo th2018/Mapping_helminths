@@ -116,7 +116,7 @@ length(unique(h_c_z$PARASITE))
 write.csv(h_c_z,file="h_c_z.csv")
 ```
 
-###INDEX OF PARASITE WITH COUNTRY NAMES IN THE SHP (n=4510)
+###INDEX OF PARASITE WITH COUNTRY NAMES IN THE SHP (n=4510) (idx=a)
 ```{r}
 #country.dbf
 #save it as country.csv
@@ -129,7 +129,7 @@ h_c_z[a,]$cate<-"a"
 head(h_c_z)
 ```
 
-###INDEX OF PARASITE WITH location NAMES not IN THE SHP (n=9077)
+###INDEX OF PARASITE WITH location NAMES not IN THE SHP (n=9077) (idx=b)
 #check_na<-as.data.frame(table(h_c_z_n$COUNTRY)) no NAs
 ```{r}
 b<-which(h_c_z$COUNTRY%in%cnt$CNTRY_NAME==F)
@@ -162,7 +162,7 @@ head(n_list_df)
 #write.csv(n_list_df,file="n_list_df.csv")
 ```
 
-#index the locations which can be extracted from geocode
+#index the locations which can be extracted from geocode (idx=c)
 ```{r}
 n_list_df_rm<-n_list_df[is.na(n_list_df$lat)==F,]
 head(n_list_df)
@@ -175,7 +175,7 @@ h_c_z[c,]$cate<-"c"
 #write.csv(n_list_df_rm,file="n_list_df_rm.csv")
 ```
 
-#index the locations which can't be extracted from geocode
+#index the locations which can't be extracted from geocode (idx=dd)
 ```{r}
 d<-which(b%in%c==F)
 dd<-b[d]
@@ -185,7 +185,7 @@ h_c_z[dd,]$cate<-"dd"
 #dd: 61   62   63   64   65 
 ```
 
-#index e: index c overlap with country shp
+#index c overlap with country shp  
 ```{r}
 dim(h_c_z[c,])
 #write.csv(h_c_z[c,],file="h_c_z_idxc.csv")
@@ -201,7 +201,8 @@ write.csv(h_c_z_m[h_c_z_m$cate=="c",],file="h_c_z_m_idxc.csv")
 
 
 ```
-#index e &ce
+
+#idx e &ce
 ```{r}
 #h_c_z_m_idxc_c.shp
 library(foreign)
@@ -221,22 +222,20 @@ h_c_z2[h_c_z2$cate=="e",]$country_shp<-as.character(h_c_z2[h_c_z2$cate=="e",]$CN
 head(h_c_z2,21)
 ```
 
-
 #Ania's list
 ```{r}
 gg_cant<-read.csv("no_loc_AM_lookup.csv",header=T,sep=',')
 head(gg_cant)
 ```
 
-
-#
+#idx g
 ```{r}
 #C:\Users\huangt\Documents\no_loc_AM_lookup_c_t.dbf intersect w country
 no_loc_AM_lookup_c_t<-read.dbf("no_loc_AM_lookup_c_t.dbf")
 h_c_z2[h_c_z2$COUNTRY%in%no_loc_AM_lookup_c_t$Location==T,]$cate<-"f"
 h_c_z2[h_c_z2$cate=="dd",]$cate<-"g"
 ```
-#country shp names for index f
+#country shp names for index f (idx=f)
 ```{r}
 #spatial join to get the country names (no_loc_AM_lookup_c_j.shp)
 no_loc_AM_lookup_c_j_t<-read.dbf("no_loc_AM_lookup_c_j_t.dbf")
@@ -247,7 +246,7 @@ dim(h_c_z3)
 h_c_z3[h_c_z3$cate=="f",]$country_shp<-as.character(h_c_z3[h_c_z3$cate=="f",]$CNTRY_NAME.y)
 head(h_c_z3)
 ```
-
+#COUNT NUMBER OF HELMINTHS IN EACH COUNTRY
 ```{r}
 #unique country shp and parasite comb
 h_c_z3_u<-unique(h_c_z3[c("country_shp", "PARASITE")])
@@ -257,11 +256,9 @@ count<-as.data.frame(table(h_c_z3_u$country_shp))
 write.csv(count,file="count_by_country.csv")
 ```
 
-
 ```{r}
 h_c_z$country_shp<-""
 h_c_z[h_c_z$cate=="a",]$country_shp<-as.character(h_c_z[h_c_z$cate=="a",]$COUNTRY)
-
 
 ```
 
@@ -289,7 +286,7 @@ head(no_channel)
 tail(no_Gulf)
 ```
 
-
+#h_c_z IS THE HELMINTH(WITH ZOOSCORE)-COUNTRY TABLE
 ```{r}
 h_c_z_c2<-merge(h_c_z,n_list_df_rm_c_t,by.x="COUNTRY",by.y="n_list",all=T)
 head(n_list_df_rm_c_t)
@@ -323,7 +320,7 @@ write.csv(unique(h_c_z_c3[!(h_c_z_c3$COUNTRY==""),]$pair),file="new_pairs.csv")
 
 ```
 
-
+#COUNT HELMINTH NUMBERS FOR EACH COUNTRY
 ```{r}
 new_pairs2<-read.csv("new_pairs2.csv",header=T,sep=',')
 new_pairs2$count<-1
