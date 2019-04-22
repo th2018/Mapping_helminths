@@ -316,7 +316,7 @@ write.csv(unique(h_c_z_c3[!(h_c_z_c3$COUNTRY==""),]$pair),file="new_pairs.csv")
 ```{r}
 
 
-#save as new_pair2.csv
+#save as new_pairs2.csv
 
 ```
 
@@ -330,13 +330,13 @@ write.csv(new_agg,file="new_agg.csv")
 ```
 
 
-```{r}
+<!-- ```{r} -->
 
-h_c_z_cc3<-aggregate(h_c_z_c3$count, by=list(Category=h_c_z_c3$COUNTRY), FUN=sum)
+<!-- h_c_z_cc3<-aggregate(h_c_z_c3$count, by=list(Category=h_c_z_c3$COUNTRY), FUN=sum) -->
 
-head(h_c_z_cc3)
-write.csv(h_c_z_cc3,file="h_c_z_cc3.csv")
-```
+<!-- head(h_c_z_cc3) -->
+<!-- write.csv(h_c_z_cc3,file="h_c_z_cc3.csv") -->
+<!-- ``` -->
 
 
 ```{r}
