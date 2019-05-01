@@ -12,6 +12,8 @@ output: html_document
 library("helminthR")
 library("ggmap")
 library("googleway")
+library(dplyr)
+library("foreign")
 ```
 
 ###load and clean the locations data
@@ -51,19 +53,14 @@ load("l_df.Rdata")
 
 ###the zooscore_trait list (n=748)
 ```{r}
-for_z<-read.csv("C:/Users/huangt/Documents/Zooscores/Zooscore_trait_Helminth.csv",header=T,sep=',')
+for_z<-read.csv("/Users/owner/Desktop/Mapping_helminths-master/Zooscore_trait_Helminth_201904.csv",header=T,sep=',')
 head(for_z)
 l_df_z<-l_df[l_df$Parasite %in% for_z$ParasiteCorrectedName_Zooscores_VR_Ver5.0_Final,]
 ```
 
-#read the Host-Parasite-Country table
+###to get the unique helminth spp. in helminthR database
 ```{r}
-l<-read.csv("C:/Users/huangt/Documents/helminth_data/l.df.csv",header=T,sep=',')
-head(l)
-```
-
-###to get the spp. in helminthR database
-```{r}
+l<-l_df
 dim(l)
 #unique species
 u_l<-unique(l$Parasite)
@@ -87,55 +84,37 @@ dim(z_in_l_w_l)
 
 ###CREATE THE UNIQUE COMB OF PARASITE AND COUNTRY
 ```{r}
-l$comb<-paste(l$Parasite,"_",l$Country,sep='')
-head(l)
-dim(l)
-u_comb<-unique(l$comb)
-length(u_comb)
-library(dplyr)
-library(tidyr)
-u_comb<-as.data.frame(u_comb)
-dim(u_comb)
-write.csv(u_comb,file="u_comb.csv")
-#comb %>% separate(comb, c("Parasite","Country"), sep="_")
+helminth_country<-unique(l[,c("Parasite","Location")])
+save(helminth_country,file="helminth_country.Rdata")
 
 ```
 
-```{r}
-#separate the column in excel
-#save as helminth_country.csv
-```
 
 #subset unique country-helminth pair to the helminth we have (n=13587)
-#check_na<-as.data.frame(table(h_c_z$PARASITE)) no NAs
-#check_na<-as.data.frame(table(h_c_z$COUNTRY)) no NAs
 ```{r}
-h_c<-read.csv("helminth_country.csv",header=T,sep=',')
+load("helminth_country.Rdata")
+h_c<-helminth_country
 head(h_c)
 dim(h_c)
-#154652      3
 
-length(unique(h_c$PARASITE))
-for_z<-read.csv("C:/Users/huangt/Documents/Zooscores/Zooscore_trait_Helminth.csv",header=T,sep=',')
-head(for_z)
-h_c_z<-h_c[h_c$PARASITE%in%for_z$Match==T,]
+length(unique(h_c$Parasite))
+
+h_c_z<-h_c[h_c$Parasite%in%for_z$Match==T,]
 dim(h_c_z)
-length(unique(h_c_z$PARASITE))
-write.csv(h_c_z,file="h_c_z.csv")
+length(unique(h_c_z$Parasite ))
+save(h_c_z,file="h_c_z.Rdata")
 ```
 
-###INDEX OF PARASITE WITH COUNTRY NAMES IN THE SHP (n=4510) (idx=a)
-```{r}
-#country.dbf
-#save it as country.csv
-cnt<-read.csv("cntry00/country.csv",header=T,sep=',')
-head(cnt)
-#locations are country names
-a<-which(h_c_z$COUNTRY%in%cnt$CNTRY_NAME==T)
-h_c_z$cate<-" "
-h_c_z[a,]$cate<-"a"
-head(h_c_z)
-```
+
+
+
+
+
+#   INDEX ECOREGION
+
+
+
+
 
 ###INDEX OF PARASITE WITH location NAMES not IN THE SHP (n=9077) (idx=b)
 #check_na<-as.data.frame(table(h_c_z_n$COUNTRY)) no NAs
