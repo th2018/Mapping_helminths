@@ -44,6 +44,11 @@ write.csv(l_df,file="l_df.csv")
 save(l_df,file="l_df.Rdata")
 ```
 
+```{r}
+
+load("l_df.Rdata")
+```
+
 ###the zooscore_trait list (n=748)
 ```{r}
 for_z<-read.csv("C:/Users/huangt/Documents/Zooscores/Zooscore_trait_Helminth.csv",header=T,sep=',')
