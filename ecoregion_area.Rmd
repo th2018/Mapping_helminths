@@ -1,0 +1,28 @@
+---
+title: "r_ecoregion"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rgeos)
+require(rgdal)
+```
+
+```{r}
+setwd("/Users/owner/Downloads/terr-ecoregions-TNC")
+tnc_terr_ecoregions <- rgdal::readOGR(dsn = ".", layer = "tnc_terr_ecoregions")
+```
+
+```{r}
+head(tnc_terr_ecoregions)
+names((tnc_terr_ecoregions))
+```
+
+```{r}
+tnc_terr_ecoregions_area<-gArea(tnc_terr_ecoregions, byid=T)
+```
+
