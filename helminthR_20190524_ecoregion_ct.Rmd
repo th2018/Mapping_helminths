@@ -1,0 +1,142 @@
+---
+title: "helminthR"
+author: "Tao Huang"
+output: html_document
+---
+
+#install and load the package
+```{r}
+#devtools::install_github("rOpenSci/helminthR")
+#devtools::install_github("dkahle/ggmap")
+#install.packages("ggmap")
+#install.packages("googleway")
+#install.packages("Rcpp")
+library("Rcpp")
+library("ggmap")
+library("helminthR")
+library("foreign")
+library("googleway")
+library(dplyr)
+
+```
+
+
+
+
+###the zooscore_trait list (n=748)
+```{r}
+l_df<-read.csv("C:/Users/huangt/Documents/Mapping_helminths-master/l.df.csv",header=T,sep=',')
+for_z<-read.csv("C:/Users/huangt/Documents/Mapping_helminths-master/Zooscore_trait_Helminth_201904.csv",header=T,sep=',')
+head(for_z)
+l_df_z<-l_df[l_df$Parasite %in% for_z$ParasiteCorrectedName_Zooscores_VR_Ver5.0_Final,]
+```
+
+###to get the unique helminth spp. in helminthR database
+```{r}
+l<-l_df
+dim(l)
+#unique species
+u_l<-unique(l$Parasite)
+length(u_l)
+z_in_l<-for_z[for_z$Match %in% u_l,]
+dim(z_in_l)
+z_not_l<-for_z[!(for_z$Match %in% u_l),]
+dim(z_not_l)
+```
+
+###MERGE THE ZOOSCORE AND HELMINTHR
+```{r}
+z_in_l_w_l<-merge(z_in_l,l,by.x="Match",by.y="Parasite")
+ dim(z_in_l)
+#595  53
+ dim(l)
+#446532      5
+dim(z_in_l_w_l)
+#62562    57
+```
+
+###CREATE THE UNIQUE COMB OF PARASITE AND COUNTRY
+```{r}
+helminth_country<-unique(l[,c("Parasite","Country")])
+
+
+```
+
+
+#subset unique country-helminth pair to the helminth we have (n=13587)
+```{r}
+
+h_c<-helminth_country
+head(h_c)
+dim(h_c)
+
+length(unique(h_c$Parasite))
+
+h_c_z<-h_c[h_c$Parasite%in%for_z$Match==T,]
+dim(h_c_z)
+length(unique(h_c_z$Parasite ))
+
+```
+
+###USE geocode to get the lat/lon
+```{r}
+#list of locations that are not country names
+h_c_z_loc<-unique(h_c_z$Country )
+h_c_z_loc<-as.data.frame(h_c_z_loc)
+register_google(key = "your key")
+
+
+has_google_key()
+
+h_c_z_loc_g<-geocode(as.character((h_c_z_loc$h_c_z_loc ))
+                     #, source = "dsk"
+                     )
+h_c_z_loc$lat<-" "
+h_c_z_loc$lon<-" "
+
+h_c_z_loc$lat<-h_c_z_loc_g$lat
+h_c_z_loc$lon<-h_c_z_loc_g$lon
+```
+
+```{r}
+write.csv(h_c_z_loc,file="C:/Users/huangt/Documents/Mapping_helminths-master/h_c_z_loc.csv")
+write.csv(h_c_z_loc[!is.na(h_c_z_loc$lat),] ,file="C:/Users/huangt/Documents/Mapping_helminths-master/h_c_z_loc_rm_NA.csv")
+```
+#geocode can't find them
+```{r}
+write.csv(h_c_z_loc[is.na(h_c_z_loc$lat),] ,file="C:/Users/huangt/Documents/Mapping_helminths-master/location_NA.csv")
+```
+
+#geocode can't find them 
+```{r}
+no_loc_AM<-read.csv("C:/Users/huangt/Documents/Mapping_helminths-master/no_loc_AM lookup.csv",header=T,sep=',')
+missing_loc<-merge(no_loc_AM,h_c_z_loc[is.na(h_c_z_loc$lat),],by.x= "Location", by.y= "h_c_z_loc" , all=T)
+write.csv(missing_loc[is.na(missing_loc$Latitude)==T,] ,file="C:/Users/huangt/Documents/Mapping_helminths-master/missing_loc.csv")
+
+```
+
+
+#add a col ecoregion
+```{r}
+H_C_Z_LOC_RM_na_eco<-read.dbf("C:/Users/huangt/Documents/Mapping_helminths-master/H_C_Z_LOC_RM_na_eco.dbf")
+```
+
+#add lat/lon to helminth-country
+```{r}
+h_c_l<-merge(h_c_z,H_C_Z_LOC_RM_na_eco,by.x= "Country", by.y="h_c_z_loc",all=T )
+dim(h_c_z)
+dim(h_c_z_loc)
+dim(h_c_l)
+```
+
+#count ecoregions of each helminth
+```{r}
+h_c_l_u<-unique(h_c_l[,c( "Parasite",  "FID_2" )])
+h_c_l$count<-1
+h_c_l_agg<-aggregate(h_c_l$count, by=list(Category=h_c_l$Parasite), FUN=sum)
+head(h_c_l_agg)
+
+colnames(h_c_l_agg)<-c("Parasite",  "Number_of_ecoregion")
+write.csv(h_c_l_agg,"C:/Users/huangt/Documents/Mapping_helminths-master/Helminth_number_of_ecoregion.csv")
+
+```
